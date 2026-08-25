@@ -439,7 +439,7 @@
     padding: 0 1rem; height: 52px; flex-shrink: 0;
     box-shadow: 0 2px 8px rgba(0,0,0,0.4);
   }
-  #map-topbar h1 { font-size: 0.88rem; font-weight: 700; white-space: nowrap; font-family: 'Inter', sans-serif; }
+  #map-topbar h1 { font-size: 0.88rem; font-weight: 700; white-space: nowrap; font-family: 'Inter', sans-serif; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
   #map-topbar h1 span { color: var(--red); }
   .map-leg { display: flex; gap: 0.5rem; flex: 1; flex-wrap: wrap; }
   .map-ld { display: flex; align-items: center; gap: 0.28rem; font-size: 0.67rem; color: rgba(255,255,255,0.7); white-space: nowrap; }
@@ -449,6 +449,13 @@
     padding: 0.28rem 0.6rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 5px; white-space: nowrap;
   }
   .map-topbtn:hover { color: #fff; border-color: rgba(255,255,255,0.5); }
+  #map-sb-toggle {
+    display: none; background: none; border: 1px solid rgba(255,255,255,0.3); color: #fff;
+    width: 34px; height: 34px; border-radius: 6px; font-size: 1.1rem; flex-shrink: 0; cursor: pointer;
+    align-items: center; justify-content: center;
+  }
+  #map-sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 550; }
+  #map-sidebar-backdrop.open { display: block; }
   #map-main { display: flex; flex: 1; overflow: hidden; }
   #map-sidebar {
     width: 295px; flex-shrink: 0; background: #fff;
@@ -524,22 +531,27 @@
   #cnt-days-label { font-size: 0.59rem; color: rgba(255,255,255,0.28); margin-top: 0.35rem; }
 
   @media(max-width:720px){
-    #map-sidebar{width:200px}
-    #map-detail{left:200px}
+    #map-detail{left:0}
     #map-dnotes{display:none}
     .map-dstats{gap:0.55rem}
     .map-dv{font-size:0.88rem}
     #trip-counter{top:64px;right:8px;min-width:190px;padding:0.8rem 1rem}
     .cnt-primary{font-size:1.2rem}
-    #map-topbar{padding:0 0.75rem;height:48px;gap:0.5rem}
+    #map-topbar{padding:0.4rem 0.75rem;height:auto;gap:0.5rem;flex-wrap:wrap}
     #map-topbar h1{font-size:0.8rem}
-    .map-leg{gap:0.25rem;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+    .map-leg{flex:1 1 100%;order:3;gap:0.4rem;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none}
     .map-leg::-webkit-scrollbar{display:none}
-    .map-ld{font-size:0.61rem}
+    .map-ld{font-size:0.61rem;flex-shrink:0}
     .map-topbtn{font-size:0.7rem;padding:0.22rem 0.45rem}
+    #map-sb-toggle{display:flex}
+    #map-sidebar{
+      position:fixed;top:0;bottom:0;left:0;width:min(82vw,300px);
+      transform:translateX(-100%);transition:transform 0.25s ease;
+      z-index:600;box-shadow:2px 0 24px rgba(0,0,0,0.35);
+    }
+    #map-sidebar.open{transform:translateX(0)}
   }
   @media(max-width:480px){
-    #map-sidebar{display:none}
     #map-detail{left:0;height:230px;bottom:-230px}
     #map-detail.open{bottom:0}
     #map-topbar h1{display:none}
@@ -2113,6 +2125,7 @@
   <!-- MAP APP -->
   <div id="map-app" class="hidden">
     <div id="map-topbar">
+      <button id="map-sb-toggle" onclick="toggleMapSidebar()" aria-label="Toggle day list">☰</button>
       <h1>Japan Cycling <span>2027</span> — Day by Day on Real Roads</h1>
       <div class="map-leg">
         <div class="map-ld"><b style="background:var(--ky)"></b>Kyushu</div>
@@ -2125,6 +2138,7 @@
       <button class="map-topbtn" onclick="clearKey()">Change Key</button>
     </div>
     <div id="map-main">
+      <div id="map-sidebar-backdrop" onclick="toggleMapSidebar(false)"></div>
       <div id="map-sidebar">
         <div id="map-sb-head">
           <strong>36 Days · Cape Sata → Cape Soya</strong>
@@ -2541,9 +2555,17 @@ function updateMapProgress(){
 }
 function setMapStatus(msg){document.getElementById('map-sb-status').textContent=msg;}
 
+function toggleMapSidebar(force){
+  const sb=document.getElementById('map-sidebar'), bd=document.getElementById('map-sidebar-backdrop');
+  const open = force!==undefined ? force : !sb.classList.contains('open');
+  sb.classList.toggle('open',open);
+  bd.classList.toggle('open',open);
+}
+
 function selectDay(num){
   const d=DAYS.find(x=>x.day===num);if(!d)return;
   activeDay=num;
+  if(window.innerWidth<=720) toggleMapSidebar(false);
   document.querySelectorAll('.map-di').forEach(el=>el.classList.remove('active'));
   const sEl=document.querySelector(`.map-di[data-day="${num}"]`);
   if(sEl){sEl.classList.add('active');sEl.scrollIntoView({block:'nearest',behavior:'smooth'});}
