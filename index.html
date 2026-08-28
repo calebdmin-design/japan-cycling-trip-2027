@@ -521,6 +521,12 @@
     box-shadow: 0 8px 40px rgba(0,0,0,0.55);
   }
   #trip-counter.hidden { display: none; }
+  #cnt-close {
+    position: absolute; top: 0.6rem; right: 0.6rem; width: 22px; height: 22px;
+    border: none; background: rgba(255,255,255,0.1); border-radius: 50%; cursor: pointer;
+    font-size: 0.75rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center;
+  }
+  #cnt-close:hover { background: rgba(255,255,255,0.2); color: #fff; }
   #cnt-label { font-size: 0.59rem; text-transform: uppercase; letter-spacing: 0.18em; color: rgba(255,255,255,0.4); margin-bottom: 0.7rem; font-weight: 700; }
   .cnt-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 1.1rem; margin-bottom: 0.8rem; }
   .cnt-primary { font-size: 1.6rem; font-weight: 800; line-height: 1; color: #fff; letter-spacing: -0.02em; }
@@ -2178,6 +2184,7 @@
 
   <!-- TRIP COUNTER -->
   <div id="trip-counter" class="hidden">
+    <button id="cnt-close" onclick="closeCounter()" aria-label="Close">✕</button>
     <div id="cnt-label">Full Journey</div>
     <div class="cnt-grid">
       <div>
@@ -2658,6 +2665,10 @@ function renderElevChart(d){
 // ═══════════════════════════════════════════════════
 // TRIP COUNTER
 // ═══════════════════════════════════════════════════
+function closeCounter(){
+  document.getElementById('trip-counter').classList.add('hidden');
+}
+
 function updateCounter(dayNum){
   const totalKm=DAYS.filter(d=>d.type==='ride').reduce((s,d)=>s+d.km,0);
   const totalGain=DAYS.filter(d=>d.type==='ride').reduce((s,d)=>s+d.gainM,0);
